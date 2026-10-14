@@ -1,11 +1,5 @@
 {
   "dependencies": {
-    "com.svermeulen.extenject": {
-      "version": "file:/Users/nk/SourcesUnity/Zenject-master/UnityProject/Assets/Plugins/Zenject",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {}
-    },
     "com.unity.2d.animation": {
       "version": "9.2.0",
       "depth": 1,
