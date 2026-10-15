@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Zenject;
 
 // Scene installer and entry point. All scene-specific references live here.
@@ -31,6 +32,7 @@ public class Game : MonoInstaller
         Config loadedConfig = Container.Resolve<IGameConfigProvider>().Load();
 
         _textProvider = Container.Resolve<IGameTextProvider>();
+        _uiController.InitializeControls(OnReloadClicked, OnClearClicked);
         GameFactory factory = Container.Resolve<GameFactory>();
         TowerService tower = Container.Resolve<TowerService>();
         tower.Initialize(_uiController.TowerArea, _uiController.Hole, _uiController.HoleMask, (RectTransform)_uiController.CubeScroll.transform, factory, ShowStatus);
@@ -53,5 +55,27 @@ public class Game : MonoInstaller
     private void ShowStatus(GameMessage message)
     {
         _uiController.SetStatus(_textProvider.Get(message));
+    }
+
+    private void OnReloadClicked()
+    {
+        ShowStatus(GameMessage.ReloadGame);
+        _uiController.CloseTransition(ReloadScene);
+    }
+
+    private void OnClearClicked()
+    {
+        ShowStatus(GameMessage.ClearData);
+        _uiController.CloseTransition(() =>
+        {
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+            ReloadScene();
+        });
+    }
+
+    private static void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

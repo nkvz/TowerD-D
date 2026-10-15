@@ -15,6 +15,10 @@ public class GameTextConfig : ScriptableObject, IGameTextProvider
     [SerializeField] private Color _heightLimitColor = Color.white;
     [SerializeField] private string _emptyConfig = "Add cubes to the config";
     [SerializeField] private Color _emptyConfigColor = Color.white;
+    [SerializeField] private string _reloadGame = "Reload Game.";
+    [SerializeField] private Color _reloadGameColor = Color.white;
+    [SerializeField] private string _clearData = "Clear Data.";
+    [SerializeField] private Color _clearDataColor = Color.white;
 
     public GameText Get(GameMessage message)
     {
@@ -26,6 +30,8 @@ public class GameTextConfig : ScriptableObject, IGameTextProvider
             case GameMessage.HoleMissed: return new GameText(_holeMissed, _holeMissedColor);
             case GameMessage.HeightLimit: return new GameText(_heightLimit, _heightLimitColor);
             case GameMessage.EmptyConfig: return new GameText(_emptyConfig, _emptyConfigColor);
+            case GameMessage.ReloadGame: return new GameText(_reloadGame, _reloadGameColor);
+            case GameMessage.ClearData: return new GameText(_clearData, _clearDataColor);
             default: return new GameText(string.Empty, Color.white);
         }
     }

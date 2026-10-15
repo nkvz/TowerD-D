@@ -14,13 +14,3 @@ public readonly struct GameText
         Color = color;
     }
 }
-
-public enum GameMessage
-{
-    CubePlaced,
-    CubeRemoved,
-    CubeMissed,
-    HoleMissed,
-    HeightLimit,
-    EmptyConfig
-}
