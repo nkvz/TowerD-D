@@ -6,7 +6,15 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    private const float TransitionDuration = 1f;
+    public ScrollRect CubeScroll => _cubeScroll;
+    public RectTransform CubeContainer => _cubeContainer;
+    public RectTransform TowerArea => _towerArea;
+    public RectTransform Hole => _hole;
+    public RectTransform HoleMask => _holeMask;
+    public RectTransform DragLayer => _dragLayer;
+    public RectTransform PoolRoot => _poolRoot;
+    
+
 
     [Header("Cube strip")]
     [SerializeField] private ScrollRect _cubeScroll;
@@ -26,21 +34,14 @@ public class UIController : MonoBehaviour
     [SerializeField] private Button _reloadButton;
     [SerializeField] private Button _clearButton;
     [SerializeField] private Image Transition;
-
+    
+    
     private Sequence _statusSequence;
     private Tween _transitionTween;
     private Action _reloadAction;
     private Action _clearAction;
     private bool _transitionInProgress;
-
-    public ScrollRect CubeScroll => _cubeScroll;
-    public RectTransform CubeContainer => _cubeContainer;
-    public RectTransform TowerArea => _towerArea;
-    public RectTransform Hole => _hole;
-    public RectTransform HoleMask => _holeMask;
-    public RectTransform DragLayer => _dragLayer;
-    public RectTransform PoolRoot => _poolRoot;
-
+    
     private void Awake()
     {
         _statusText.text = string.Empty;
@@ -52,11 +53,7 @@ public class UIController : MonoBehaviour
 
     private void Start()
     {
-        _transitionTween = Transition.DOFade(0f, TransitionDuration).SetUpdate(true).OnComplete(() =>
-        {
-            Transition.raycastTarget = false;
-            _transitionInProgress = false;
-        });
+        OpenTransition();
     }
 
     public void InitializeControls(Action reloadAction, Action clearAction)
@@ -67,6 +64,15 @@ public class UIController : MonoBehaviour
         _clearButton.onClick.AddListener(OnClearClicked);
     }
 
+    public void OpenTransition()
+    {
+        _transitionTween = Transition.DOFade(0f, 2).SetUpdate(true).OnComplete(() =>
+        {
+            Transition.raycastTarget = false;
+            _transitionInProgress = false;
+        });
+    }
+    
     public void CloseTransition(Action completed)
     {
         if (_transitionInProgress)
@@ -75,7 +81,7 @@ public class UIController : MonoBehaviour
         _transitionInProgress = true;
         Transition.raycastTarget = true;
         _transitionTween?.Kill();
-        _transitionTween = Transition.DOFade(1f, TransitionDuration).SetUpdate(true).OnComplete(() => completed?.Invoke());
+        _transitionTween = Transition.DOFade(1f, 1).SetUpdate(true).OnComplete(() => completed?.Invoke());
     }
 
     private void OnReloadClicked()

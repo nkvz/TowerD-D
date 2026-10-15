@@ -2209,6 +2209,7 @@ MonoBehaviour:
   _config: {fileID: 11400000, guid: e13b4361ab684540979304769e6a29fa, type: 2}
   _uiController: {fileID: 525655068}
   _gameFactory: {fileID: 1152582899}
+  _placementRule: 0
 --- !u!4 &2068511265
 Transform:
   m_ObjectHideFlags: 0
