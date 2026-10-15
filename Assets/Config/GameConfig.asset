@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f637ed8f6863f45b3bb84dfbd9700ec9, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: 
+  _cubeCount: 20
+  _gameTextConfig: {fileID: 11400000, guid: 6edc93e2efcc428888717199d14880f9, type: 2}
+  _cubes:
+  - _type: 0
+    _sprite: {fileID: 21300000, guid: 5d11267a5852341b799647dd8265b677, type: 3}
+  - _type: 1
+    _sprite: {fileID: 21300000, guid: b635def2e024046aaa9b39472e6c752b, type: 3}
+  - _type: 2
+    _sprite: {fileID: 21300000, guid: 112efc68e9d554cf684fbaf505d8a9cb, type: 3}
+  - _type: 3
+    _sprite: {fileID: 21300000, guid: 1defa0dfdf7374f03989a2469689fb0d, type: 3}
+  - _type: 4
+    _sprite: {fileID: 21300000, guid: c66166c8077af4aae8a8d3c6f3359263, type: 3}
+  - _type: 5
+    _sprite: {fileID: 21300000, guid: dde2ccd10cc494c0ab41f8f1eb570705, type: 3}
+  - _type: 6
+    _sprite: {fileID: 21300000, guid: 6be2ad5b0902341328604d9b8d11dc85, type: 3}
+  - _type: 7
+    _sprite: {fileID: 21300000, guid: 459ff18d17cd244079924dd9b4f6b136, type: 3}
+  - _type: 8
+    _sprite: {fileID: 21300000, guid: 307a52f93ef2c45a88b718e11cdcbb1a, type: 3}
+  - _type: 9
+    _sprite: {fileID: 21300000, guid: 95b0a66d16f2043d9b9913530d8c52ce, type: 3}
+  - _type: 10
+    _sprite: {fileID: 21300000, guid: 4e5346d1a9ca14195b239177d155070f, type: 3}
+  - _type: 11
+    _sprite: {fileID: 21300000, guid: 5b7d6da6dad3f407883f83af6e6feb2e, type: 3}
+  - _type: 12
+    _sprite: {fileID: 21300000, guid: 7e161623551f64d48a4403e3c644834b, type: 3}
+  - _type: 13
+    _sprite: {fileID: 21300000, guid: 33c05eeb9124b47ff88b9965e5b2aa38, type: 3}
+  - _type: 14
+    _sprite: {fileID: 21300000, guid: 5ebcbe367291d482283231a66f79d775, type: 3}
+  - _type: 15
+    _sprite: {fileID: 21300000, guid: 49f8f4f3a18cb49bca1540bb08d0dd2a, type: 3}
+  - _type: 16
+    _sprite: {fileID: 21300000, guid: a37605817aa9842a9bd748e03f595306, type: 3}
+  - _type: 17
+    _sprite: {fileID: 21300000, guid: ef5a44b12c6734f73959718a21407c28, type: 3}
+  - _type: 18
+    _sprite: {fileID: 21300000, guid: 332f4096d49044b488ae005c5f6bef33, type: 3}
+  - _type: 19
+    _sprite: {fileID: 21300000, guid: 06d58153acbf546649a6abb4ca73aa1f, type: 3}
