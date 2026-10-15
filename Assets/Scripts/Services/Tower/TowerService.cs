@@ -114,6 +114,7 @@ public class TowerService
         cube.transform.SetParent(_area, true);
         cube.SetRaycastTarget(false);
         _cubes.Add(cube);
+        _report?.Invoke(GameMessage.CubePlaced);
 
         RectTransform cubeRect = cube.RectTransform;
         cubeRect.anchoredPosition = new Vector2(destination.x, Mathf.Max(cubeRect.anchoredPosition.y, destination.y));
@@ -141,7 +142,6 @@ public class TowerService
         {
             cubeRect.localRotation = Quaternion.identity;
             cube.SetRaycastTarget(true);
-            _report?.Invoke(GameMessage.CubePlaced);
             completed?.Invoke();
         });
     }
@@ -215,13 +215,14 @@ public class TowerService
         cube.transform.SetParent(_holeMask, true);
         cube.transform.SetAsLastSibling();
         RemoveFromTower(cube);
+        _report?.Invoke(GameMessage.CubeRemoved);
 
         cube.SetRaycastTarget(false);
         DOTween.Sequence()
             .Append(cube.transform.DOMove(impact, 0.4f).SetEase(Ease.InQuad))
             .Append(cube.transform.DOMove(floor, 0.42f).SetEase(Ease.InQuad))
             .Append(cube.RectTransform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack))
-            .OnComplete(() => Finish(cube, GameMessage.CubeRemoved, completed));
+            .OnComplete(() => Finish(cube, completed));
         return true;
     }
 
@@ -229,12 +230,14 @@ public class TowerService
     {
         RemoveFromTower(cube);
         cube.SetRaycastTarget(false);
+        _report?.Invoke(_heightLimitReached ? GameMessage.HeightLimit : message);
+        _heightLimitReached = false;
 
         float fallDistance = Mathf.Max(cube.RectTransform.rect.height * 1.2f, 60f);
         DOTween.Sequence()
             .Append(cube.RectTransform.DOAnchorPosY(cube.RectTransform.anchoredPosition.y - fallDistance, 0.25f).SetEase(Ease.InQuad))
             .Append(cube.RectTransform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack))
-            .OnComplete(() => Finish(cube, _heightLimitReached ? GameMessage.HeightLimit : message, completed));
+            .OnComplete(() => Finish(cube, completed));
     }
 
     private float RemoveFromTower(Cube cube)
@@ -332,11 +335,9 @@ public class TowerService
         return true;
     }
 
-    private void Finish(Cube cube, GameMessage message, Action completed)
+    private void Finish(Cube cube, Action completed)
     {
         _factory.ReleaseCube(cube);
-        _report?.Invoke(message);
-        _heightLimitReached = false;
         completed?.Invoke();
     }
 }

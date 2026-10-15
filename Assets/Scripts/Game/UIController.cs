@@ -1,3 +1,5 @@
+using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +17,9 @@ public class UIController : MonoBehaviour
     [SerializeField] private RectTransform _poolRoot;
 
     [Header("Feedback")]
-    [SerializeField] private Text _statusText;
+    [SerializeField] private TMP_Text _statusText;
+
+    private Sequence _statusSequence;
 
     public ScrollRect CubeScroll => _cubeScroll;
     public RectTransform CubeContainer => _cubeContainer;
@@ -24,6 +28,8 @@ public class UIController : MonoBehaviour
     public RectTransform HoleMask => _holeMask;
     public RectTransform DragLayer => _dragLayer;
     public RectTransform PoolRoot => _poolRoot;
+
+    private void Awake() => _statusText.text = string.Empty;
     
     public void ClearExistingCubes()
     {
@@ -38,8 +44,22 @@ public class UIController : MonoBehaviour
         }
     }
 
-    public void SetStatus(string value)
+    public void SetStatus(GameText value)
     {
-        _statusText.text = value;
+        _statusSequence?.Kill();
+
+        _statusText.text = value.Text;
+        _statusText.color = value.Color;
+        _statusText.alpha = 1f;
+        _statusText.rectTransform.localScale = Vector3.zero;
+
+        _statusSequence = DOTween.Sequence()
+            .SetTarget(_statusText)
+            .Append(_statusText.rectTransform.DOScale(1.2f, 0.16f).SetEase(Ease.OutCubic))
+            .Append(_statusText.rectTransform.DOScale(1f, 0.1f).SetEase(Ease.InOutQuad))
+            .AppendInterval(1f)
+            .Append(DOTween.To(() => _statusText.alpha, alpha => _statusText.alpha = alpha, 0f, 0.3f));
     }
+
+    private void OnDestroy() => _statusSequence?.Kill();
 }

@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca6a248a5bbf49a29ca5eecf2f5810a8, type: 3}
   m_Name: EnglishGameTextConfig
   m_EditorClassIdentifier:
-  _cubePlaced: Cube placed in the tower
-  _cubeRemoved: Cube dropped into the hole
-  _cubeMissed: Cube missed the tower
-  _holeMissed: Cube missed the hole
+  _cubePlaced: Placed!
+  _cubePlacedColor: {r: 0.29803923, g: 0.74509805, b: 0.5529412, a: 1}
+  _cubeRemoved: Remove.
+  _cubeRemovedColor: {r: 0.29803923, g: 0.74509805, b: 0.5529412, a: 1}
+  _cubeMissed: Miss...
+  _cubeMissedColor: {r: 0.9, g: 0.28, b: 0.25, a: 1}
+  _holeMissed: Miss.
+  _holeMissedColor: {r: 0.9, g: 0.28, b: 0.25, a: 1}
   _heightLimit: The tower has reached the top
+  _heightLimitColor: {r: 0.95, g: 0.58, b: 0.14, a: 1}
   _emptyConfig: Add cubes to the config
+  _emptyConfigColor: {r: 0.95, g: 0.58, b: 0.14, a: 1}
