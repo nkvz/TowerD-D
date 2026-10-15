@@ -9,6 +9,7 @@ public class TowerService
 
     private readonly List<Cube> _cubes = new List<Cube>();
     private readonly IPlacementRule _placementRule;
+    private readonly SaveLoadService _saveLoad;
     private RectTransform _area;
     private RectTransform _hole;
     private RectTransform _holeMask;
@@ -17,13 +18,13 @@ public class TowerService
     private Action<GameMessage> _report;
     private bool _heightLimitReached;
 
-    public TowerService(IPlacementRule placementRule)
+    public TowerService(IPlacementRule placementRule, SaveLoadService saveLoad)
     {
         _placementRule = placementRule;
+        _saveLoad = saveLoad;
     }
 
-    public void Initialize(RectTransform towerArea, RectTransform holeRect, RectTransform holeMask, RectTransform cubeBar,
-        GameFactory gameFactory, Action<GameMessage> reportAction)
+    public void Initialize(RectTransform towerArea, RectTransform holeRect, RectTransform holeMask, RectTransform cubeBar, GameFactory gameFactory, Action<GameMessage> reportAction)
     {
         _area = towerArea;
         _hole = holeRect;
@@ -31,6 +32,44 @@ public class TowerService
         _cubeBar = cubeBar;
         _factory = gameFactory;
         _report = reportAction;
+    }
+
+    public void Restore(SaveLoadService.TowerData data, IReadOnlyList<CubeConfig> configs)
+    {
+        if (data?.cubes == null || configs == null)
+            return;
+
+        for (int i = 0; i < data.cubes.Count; i++)
+        {
+            SaveLoadService.CubeData saved = data.cubes[i];
+            if (saved == null || float.IsNaN(saved.position.x) || float.IsInfinity(saved.position.x) ||
+                float.IsNaN(saved.position.y) || float.IsInfinity(saved.position.y))
+                break;
+
+            CubeConfig config = null;
+            for (int j = 0; j < configs.Count; j++)
+            {
+                if (configs[j] != null && string.Equals(configs[j].Type.ToString(), saved.type, StringComparison.Ordinal))
+                {
+                    config = configs[j];
+                    break;
+                }
+            }
+
+            if (config == null)
+            {
+                Debug.LogWarning($"Could not restore cube type '{saved.type}' from the tower save.");
+                break;
+            }
+
+            Cube cube = _factory.CreateCube(config, _area, false);
+            RectTransform rect = cube.RectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = saved.position;
+            cube.SetRaycastTarget(true);
+            _cubes.Add(cube);
+        }
     }
 
     public bool TryPlace(Cube cube, Vector2 screenPoint, Camera camera, Action completed)
@@ -142,6 +181,7 @@ public class TowerService
         {
             cubeRect.localRotation = Quaternion.identity;
             cube.SetRaycastTarget(true);
+            _saveLoad.Save(_cubes);
             completed?.Invoke();
         });
     }
@@ -218,11 +258,11 @@ public class TowerService
         _report?.Invoke(GameMessage.CubeRemoved);
 
         cube.SetRaycastTarget(false);
-        DOTween.Sequence()
+        Sequence throwAnimation = DOTween.Sequence()
             .Append(cube.transform.DOMove(impact, 0.4f).SetEase(Ease.InQuad))
-            .Append(cube.transform.DOMove(floor, 0.42f).SetEase(Ease.InQuad))
-            .Append(cube.RectTransform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack))
-            .OnComplete(() => Finish(cube, completed));
+            .Append(cube.transform.DOMove(floor, 0.42f).SetEase(Ease.InQuad));
+        AppendDisappearance(throwAnimation, cube, .5f, .5f);
+        throwAnimation.OnComplete(() => Finish(cube, completed));
         return true;
     }
 
@@ -230,14 +270,19 @@ public class TowerService
     {
         RemoveFromTower(cube);
         cube.SetRaycastTarget(false);
-        _report?.Invoke(_heightLimitReached ? GameMessage.HeightLimit : message);
+        GameMessage result = _heightLimitReached ? GameMessage.HeightLimit : message;
+        _report?.Invoke(result);
         _heightLimitReached = false;
 
         float fallDistance = Mathf.Max(cube.RectTransform.rect.height * 1.2f, 60f);
-        DOTween.Sequence()
-            .Append(cube.RectTransform.DOAnchorPosY(cube.RectTransform.anchoredPosition.y - fallDistance, 0.25f).SetEase(Ease.InQuad))
-            .Append(cube.RectTransform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack))
-            .OnComplete(() => Finish(cube, completed));
+        Sequence discard = DOTween.Sequence()
+            .Append(cube.RectTransform.DOAnchorPosY(cube.RectTransform.anchoredPosition.y - fallDistance, 0.25f).SetEase(Ease.InQuad));
+
+        if (result == GameMessage.CubeMissed || result == GameMessage.HoleMissed)
+            discard.AppendCallback(() => _factory.SpawnParticleHitEffect(cube.RectTransform.position));
+
+        AppendDisappearance(discard, cube, 0.1f, 0.35f);
+        discard.OnComplete(() => Finish(cube, completed));
     }
 
     private float RemoveFromTower(Cube cube)
@@ -304,13 +349,21 @@ public class TowerService
             fallingCube.SetRaycastTarget(false);
 
             RectTransform rect = fallingCube.RectTransform;
-            float belowArea = _area.rect.yMin - rect.rect.height * 0.5f;
-            DOTween.Sequence()
+            int levelsAboveGap = i - firstIndex;
+            float fallDuration = Mathf.Min(0.28f + levelsAboveGap * 0.08f, 0.85f);
+            float disappearY = rect.anchoredPosition.y - rect.rect.height;
+            Sequence fall = DOTween.Sequence()
                 .SetTarget(rect)
-                .Append(rect.DOAnchorPosY(belowArea, 0.38f).SetEase(Ease.InQuad))
-                .Append(rect.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack))
-                .OnComplete(() => _factory.ReleaseCube(fallingCube));
+                .Append(rect.DOAnchorPosY(disappearY, fallDuration).SetEase(Ease.InQuad));
+            AppendDisappearance(fall, fallingCube, Mathf.Max(0f, fallDuration - 0.1f), 0.3f);
+            fall.OnComplete(() => _factory.ReleaseCube(fallingCube));
         }
+    }
+
+    private static void AppendDisappearance(Sequence sequence, Cube cube, float dissolveStart, float dissolveDuration)
+    {
+        sequence.Append(cube.RectTransform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack));
+        sequence.Insert(dissolveStart, cube.DODissolve(dissolveDuration));
     }
 
     private bool TryGetHoleImpact(Vector2 screenPoint, Camera camera, out Vector3 impact)
@@ -338,6 +391,7 @@ public class TowerService
     private void Finish(Cube cube, Action completed)
     {
         _factory.ReleaseCube(cube);
+        _saveLoad.Save(_cubes);
         completed?.Invoke();
     }
 }

@@ -10,8 +10,10 @@ public class Game : MonoInstaller
     [SerializeField] private GameFactory _gameFactory;
 
     private IGameTextProvider _textProvider;
+    private SaveLoadService _saveLoad;
 
     public RectTransform PoolRoot => _uiController.PoolRoot;
+    public RectTransform EffectRoot => _uiController.DragLayer;
 
     public override void InstallBindings()
     {
@@ -24,6 +26,7 @@ public class Game : MonoInstaller
         Container.Bind<CubePool>().AsSingle();
         Container.BindInstance(_gameFactory).AsSingle();
         Container.Bind<DragDropService>().AsSingle();
+        Container.Bind<SaveLoadService>().AsSingle();
         Container.Bind<TowerService>().AsSingle();
     }
 
@@ -32,6 +35,7 @@ public class Game : MonoInstaller
         Config loadedConfig = Container.Resolve<IGameConfigProvider>().Load();
 
         _textProvider = Container.Resolve<IGameTextProvider>();
+        _saveLoad = Container.Resolve<SaveLoadService>();
         _uiController.InitializeControls(OnReloadClicked, OnClearClicked);
         GameFactory factory = Container.Resolve<GameFactory>();
         TowerService tower = Container.Resolve<TowerService>();
@@ -50,6 +54,9 @@ public class Game : MonoInstaller
         {
             factory.CreateCube(loadedConfig.GetCube(i), _uiController.CubeContainer, true);
         }
+
+        if (_saveLoad.TryLoad(out SaveLoadService.TowerData savedTower))
+            tower.Restore(savedTower, loadedConfig.Cubes);
     }
 
     private void ShowStatus(GameMessage message)
@@ -68,8 +75,7 @@ public class Game : MonoInstaller
         ShowStatus(GameMessage.ClearData);
         _uiController.CloseTransition(() =>
         {
-            PlayerPrefs.DeleteAll();
-            PlayerPrefs.Save();
+            _saveLoad.ClearAll();
             ReloadScene();
         });
     }

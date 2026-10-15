@@ -4,6 +4,7 @@ using Zenject;
 public class GameFactory : MonoBehaviour
 {
     [SerializeField] private Cube _cubePrefab;
+    [SerializeField] private ParticleSystem _hitParticlePrefab;
 
     private CubePool _cubePool;
     private DiContainer _container;
@@ -29,5 +30,21 @@ public class GameFactory : MonoBehaviour
     {
         if (cube != null)
             _cubePool.Return(cube);
+    }
+
+    public void SpawnParticleHitEffect(Vector3 position)
+    {
+        ParticleSystem effect = Instantiate(_hitParticlePrefab, position, Quaternion.identity);
+
+        Canvas canvas = _game.EffectRoot.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            ParticleSystemRenderer[] renderers = effect.GetComponentsInChildren<ParticleSystemRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                renderers[i].sortingLayerID = canvas.sortingLayerID;
+                renderers[i].sortingOrder = canvas.sortingOrder + 1;
+            }
+        }
     }
 }
